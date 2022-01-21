@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "UniFi-Controller-Patch": {
+      "commandName": "Project",
+      "remoteDebugEnabled": true,
+      "authenticationMode": "Windows",
+      "remoteDebugMachine": "192.168.32.195:4026"
+    }
+  }
+}
