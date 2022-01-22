@@ -1,26 +1,23 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
-using System.Linq;
 using System.Net;
-using System.ServiceProcess;
 
 namespace UniFiControllerPatch
 {
     internal class Program
     {
-        public static string unifi = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) , "Ubiquiti UniFi\\lib\\");
+        public static string unifi = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Ubiquiti UniFi\\lib\\");
         public static string unifi_jar = Path.Combine(unifi, "ace.jar");
         static void Main(string[] args)
         {
             Console.WriteLine("[i] Log4j Patcher for UniFi Network Controller [Version: 1.0.0]");
             Console.WriteLine("[i] by valnoxy (https://valnoxy.dev)");
-            Console.WriteLine("\n[i] This tool is open source! See: https://github.com/valnoxy/UniFi-Controller-Patch");
+            Console.WriteLine("\n[i] This tool is open source! See: https://github.com/valnoxy/UniFi-Log4j-Patch");
 
             string service = CheckSys();
 
-            RunService(service, false);
+            RunService(service, false, false);
 
             string log4jver = String.Empty;
             if (service == "svc")
@@ -67,7 +64,7 @@ namespace UniFiControllerPatch
                 Console.WriteLine("[!] This Version of UniFi Network Controller is too old. Please update it before using this patch.");
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("[!] Restart service ...");
-                RunService(service, true);
+                RunService(service, true, true);
                 
                 Console.WriteLine("[!] Terminating in 10 sec ...");
                 System.Threading.Thread.Sleep(10000);
@@ -78,7 +75,7 @@ namespace UniFiControllerPatch
             UpdateClass(unifi, "https://dl.exploitox.de/other/vuln/log4j/v2.17.1/log4j-api-2.17.1.jar", log4jver, "api");
             UpdateClass(unifi, "https://dl.exploitox.de/other/vuln/log4j/v2.17.1/log4j-core-2.17.1.jar", log4jver, "core");
             UpdateClass(unifi, "https://dl.exploitox.de/other/vuln/log4j/v2.17.1/log4j-slf4j-impl-2.17.1.jar", log4jver, "slf4j-impl");
-            RunService(service, true);
+            RunService(service, true, true);
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("[i] PowerChute was successfully patched! Closing ...");
             Console.ForegroundColor = ConsoleColor.White;
@@ -102,36 +99,47 @@ namespace UniFiControllerPatch
             }
         }
 
-        private static void RunService(string servicename, bool v)
+        private static void RunService(string servicename, bool v, bool ui)
         {
             Process p = new Process();
             p.StartInfo.FileName = "cmd.exe";
 
             if (v == true)
             {
-                p.StartInfo.Arguments = $"/c java -jar {unifi_jar} startsvc";
+                p.StartInfo.Arguments = $"/c java -jar \"{unifi_jar}\" startsvc";
             }
 
             if (v == false)
             {
-                p.StartInfo.Arguments = $"/c java -jar {unifi_jar} stopsvc";
+                p.StartInfo.Arguments = $"/c java -jar \"{unifi_jar}\" stopsvc";
+
+                Console.WriteLine("[i] Please close UniFi Network application if opened.");
+                Console.Write("[i] Press ENTER to continue.");
+                Console.ReadLine();
             }
 
             p.Start();
             p.WaitForExit();
+
+            if (ui == true)
+            {
+                Console.WriteLine("[i] Starting UniFi Network application ...");
+                p.StartInfo.Arguments = $"/c java -jar \"{unifi_jar}\" ui";
+                p.Start();
+            }
         }
         
         private static void UpdateClass(string path, string url, string log4jver, string log4jmodule)
         {
-            using (var client = new WebClient())
+            using (var client = new WebClient())            // TODO: Switch to HttpClient
             {
                 // =================================
                 // =      Downloading Class        =
                 // =================================
-                Console.Write($"[i] Downloading log4j-{log4jmodule}-2.17.1.jar ... ");
                 try 
                 {
-                    client.DownloadFile(url, path);
+                    Console.Write($"[i] Downloading log4j-{log4jmodule}-2.17.1.jar ... ");
+                    client.DownloadFile(url, Path.Combine(path, $"log4j-{log4jmodule}-2.17.1.jar"));
                 }
                 catch (Exception ex)
                 {
@@ -146,7 +154,7 @@ namespace UniFiControllerPatch
                 // =================================
                 try
                 {
-                    Console.WriteLine($"[i] Removing log4j-{log4jmodule}-{log4jver}.jar ... ");
+                    Console.Write($"[i] Removing log4j-{log4jmodule}-{log4jver}.jar ... ");
                     File.Delete(Path.Combine(path, $"log4j-{log4jmodule}-{log4jver}.jar"));
                 }
                 catch (Exception ex)
@@ -162,7 +170,7 @@ namespace UniFiControllerPatch
                 // =================================
                 try
                 {
-                    Console.WriteLine($"[i] Linking to log4j-{log4jmodule}-2.17.1.jar ... ");
+                    Console.Write($"[i] Linking to log4j-{log4jmodule}-2.17.1.jar ... ");
                     SymbolLink.SymbolicLink.CreateSymbolicLink(Path.Combine(path, $"log4j-{log4jmodule}-2.17.1.jar"), Path.Combine(path, $"log4j-{log4jmodule}-{log4jver}.jar"), true);
                 }
                 catch (Exception ex)

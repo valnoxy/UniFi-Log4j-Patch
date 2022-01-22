@@ -9,7 +9,7 @@
     <Copyright>Copyright (c) 2018 - 2022 valnoxy. All rightes reserved.</Copyright>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>bucker_icon.ico</ApplicationIcon>
-    <DebugType>none</DebugType>
+    <DebugType>full</DebugType>
     <PackageProjectUrl>https://github.com/valnoxy/UniFi-Controller-Patch</PackageProjectUrl>
     <Product>bucker</Product>
 	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
