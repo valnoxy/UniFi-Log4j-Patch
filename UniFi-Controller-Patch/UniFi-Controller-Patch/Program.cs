@@ -77,7 +77,7 @@ namespace UniFiControllerPatch
             UpdateClass(unifi, "https://dl.exploitox.de/other/vuln/log4j/v2.17.1/log4j-slf4j-impl-2.17.1.jar", log4jver, "slf4j-impl");
             RunService(service, true, true);
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("[i] PowerChute was successfully patched! Closing ...");
+            Console.WriteLine("[i] UniFi Network Controller was successfully patched! Closing ...");
             Console.ForegroundColor = ConsoleColor.White;
             System.Threading.Thread.Sleep(5000);
         }
